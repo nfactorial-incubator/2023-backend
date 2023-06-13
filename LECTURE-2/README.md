@@ -65,17 +65,17 @@ import_routers(__name__)
 
 ### 6. Создадим первый роут
 
-Роут создадим в `./app/posts/router/router_change_post.py`.
+Роут создадим в `./app/posts/router/router_create_post.py`.
 
-Определяем что роут доступен через метод `PATCH`.
+Определяем что роут доступен через метод `POST`.
 
-Даем название ф-ции. Название должно кратко описывать что делает функция, допустим `change_post`.
+Даем название ф-ции. Название должно кратко описывать что делает функция, допустим `create_post`.
 
 ```py
 from . import router
 
-@router.patch("/")
-def change_post():
+@router.post("/")
+def create_post():
     return {"message": "nFactorial School"}
 ```
 
@@ -83,21 +83,21 @@ def change_post():
 
 Чтобы в swagger показывать какой будет ожидаемый ответ, мы должны определить модель ответа.
 
-Создаем класс `ChangePostResponse` с ожидаемыми полями, в нашем случае `message`.
+Создаем класс `CreatePostResponse` с ожидаемыми полями, в нашем случае `message`.
 
-Обратите внимание что название ф-ции `change_post`, а название класса `ChangePostResponse`. Вы должны в дальнейшем придерживаться такого же принципа. Если название ф-ции было бы `create_first_post`, то название класса `CreateFirstPostResponse`.
+Обратите внимание что название ф-ции `create_post`, а название класса `CreatePostResponse`. Вы должны в дальнейшем придерживаться такого же принципа. Если название ф-ции было бы `create_first_post`, то название класса `CreateFirstPostResponse`.
 
 ```py
 from app.utils import AppModel
 
 from . import router
 
-class ChangePostResponse(AppModel):
+class CreatePostResponse(AppModel):
     message: str
 
 
-@router.patch("/", response_model=ChangePostResponse)
-def change_post():
+@router.post("/", response_model=CreatePostResponse)
+def create_post():
     return {"message": "nFactorial School"}
 ```
 
@@ -133,7 +133,8 @@ app.include_router(posts_router, prefix="/posts", tags=["Posts"]) # <- подк�
 
 Чтобы в swagger показывать какое тело запроса роут ожидает, мы должны определить структуру тела.
 
-Создаем класс `ChangePostRequest` с ожидаемыми полями, к примеру мы хотим принимать:
+Создаем класс `CreatePostRequest` с ожидаемыми полями, к примеру мы хотим принимать:
+
 ```
 {
     "city": "Almaty",
@@ -144,11 +145,10 @@ app.include_router(posts_router, prefix="/posts", tags=["Posts"]) # <- подк�
 Тогда модель класса должна быть следующей:
 
 ```py
-class ChangePostRequest(AppModel):
+class CreatePostRequest(AppModel):
     city: str
     message: str
 ```
-
 
 Подключим нашу структуру запроса к роуту:
 
@@ -158,17 +158,17 @@ from app.utils import AppModel
 from . import router
 
 
-class ChangePostRequest(AppModel):
+class CreatePostRequest(AppModel):
     city: str
     message: str
 
 
-class ChangePostResponse(AppModel):
+class CreatePostResponse(AppModel):
     message: str
 
 
-@router.patch("/", response_model=ChangePostResponse)
-def change_post(req: ChangePostRequest):
+@router.post("/", response_model=CreatePostResponse)
+def create_post(req: CreatePostRequest):
     return {"message": "nFactorial School"}
 ```
 
@@ -191,7 +191,7 @@ from app.auth.router.dependencies import parse_jwt_user_data
 
 ```py
 # ...
-def change_post(req: ChangePostRequest, jwt_data: JWTData = Depends(parse_jwt_user_data)):
+def create_post(req: CreatePostRequest, jwt_data: JWTData = Depends(parse_jwt_user_data)):
 # ...
 ```
 
@@ -199,8 +199,8 @@ def change_post(req: ChangePostRequest, jwt_data: JWTData = Depends(parse_jwt_us
 
 ```py
 # ...
-def change_post(
-    req: ChangePostRequest, 
+def create_post(
+    req: CreatePostRequest,
     jwt_data: JWTData = Depends(parse_jwt_user_data),
 ):
 # ...
@@ -213,3 +213,135 @@ def change_post(
 ```py
 user_id = jwt_data.user_id
 ```
+
+## Подключение базы данных к модулю
+
+Для того чтобы была возможность работать с базой данных, понадобится сделать две вещи:
+
+1. Создать репозиторий
+2. Добавить репозиторий в сервис модуля
+
+> 💡 Репозиторий - это класс для работы с базой данных, методы репозитория будем вызывать внутри роутов
+
+> 💡 Сервис модуля хранит все завимости текущего модуля. На данном этапе мы знакомы только с одной зависимостью - с базой данных.
+> Сервис доступен внутри роутов.
+
+### 1. Создаем папку repository `./app/posts/repository`
+
+### 2. Внутри папки создаем два файла
+
+- `__init__.py` - оставляем пустым
+- `repository.py`
+
+### 3. Создаем класс репозитория
+
+Мы создаем репозиторий, который взаимодействует с данным `posts`, поэтому назовем наш класс `PostRepository`.
+
+```py
+from bson.objectid import ObjectId
+from pymongo.database import Database
+
+
+class PostRepository:
+    def __init__(self, database: Database):
+        self.database = database
+```
+
+- `Database` - это подключение к MongoDB
+- `ObjectId` - в дальнейшем понадобится чтобы оборачивать id, будь то id пользователей или id постов
+
+### 4. Добавляем первый метод для сохранения постов
+
+Добавляем первый метод, которые записывает данные в базу данных.
+
+```py
+class PostRepository:
+    def __init__(self, database: Database):
+        self.database = database
+
+    def create_post(self, post: dict):
+        payload = {
+            "city": post["city"],
+            "message": post["message"],
+        }
+
+        self.database["posts"].insert_one(payload)
+```
+
+### 5. Добавляем PostRepository в Service
+
+Данный шаг требуется, чтобы наш репозиторий был доступен всем роутам модуля.
+
+В `./app/posts/service.py` импортируем только что созданный класс `PostRepository`
+
+```py
+from .repository.repository import PostRepository
+```
+
+Теперь изменяем класс `Service` чтобы сохранял репозиторий себе.
+
+```py
+class Service:
+    def __init__(self):
+        self.repository = PostRepository(database)
+```
+
+### 6. Изменим логику в роуте чтобы сохранял в базу данных
+
+Данный код не сохраняет пост в базу данных, но мы дополним чтобы сохранял.
+
+```py
+from app.utils import AppModel
+
+from . import router
+
+
+class CreatePostRequest(AppModel):
+    city: str
+    message: str
+
+
+class CreatePostResponse(AppModel):
+    message: str
+
+
+@router.post("/", response_model=CreatePostResponse)
+def create_post(
+    req: CreatePostRequest,
+):
+    return {"message": "nFactorial School"}
+```
+
+
+Сначала импортируем сервис данного модуля:
+```py
+from fastapi import Depends
+
+from ..service import Service, get_service
+```
+
+Изменяем аргумент модуля, чтобы имел доступ к сервису модуля:
+
+```py
+@router.post("/", response_model=CreatePostResponse)
+def create_post(
+    req: CreatePostRequest,
+    svc: Service = Depends(get_service),
+):
+    return {"message": "nFactorial School"}
+```
+
+Передаем данные из запроса в функцию репозитория `create_post`, но перед этим сконвертируем данные в тип `dict`.
+
+```py
+@router.post("/", response_model=CreatePostResponse)
+def create_post(
+    req: CreatePostRequest,
+    svc: Service = Depends(get_service),
+):
+    post = req.dict()
+    svc.repository.create_post(post)
+    return {"message": "nFactorial School"}
+```
+
+Все, на данном этапе данные сохраняются в базу данных.
