@@ -76,6 +76,10 @@
 
 ![img](./resources/16.png)
 
+## 05. В этом же репозитории меняем ссылку на репозиторий в render.yaml
+
+![img](./resources/32.png)
+
 ## Настройка Render.com
 
 ## 01. Заходим на [render.com](https://render.com/)
