@@ -39,3 +39,7 @@
 Нажмите на `Create API key` и вам создастся ключ, сохраните его чтобы использовать у себя в API.
 
 ![img](./resources/7.png)
+
+# Полезные ссылки
+
+- [Документация here.com](https://developer.here.com/documentation/geocoding-search-api/dev_guide/topics/quick-start.html)
