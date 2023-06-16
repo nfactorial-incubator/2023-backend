@@ -30,3 +30,15 @@
 - [Презентация](https://docs.google.com/presentation/d/11CjJlW-ZULhUbEE0DocEPu6JSGSEd54dV2JfGLKck3E/edit?usp=sharing)
 - [Cпринт](./LECTURE-4/SPRINT-3/)
 - [Код](./LECTURE-4/code/)
+
+## Лекция 5
+
+- [Презентация](https://docs.google.com/presentation/d/1vDgbq41iBlmUIP8vVERsMD9t_dK3nLuPaJpW3euPgew/edit?usp=sharing)
+- [Cпринт](./LECTURE-5/SPRINT-4/)
+- [Код](./LECTURE-5/code/)
+
+
+## Лекция 6
+
+- [Cпринт](./LECTURE-6/SPRINT-5/)
+
