@@ -90,9 +90,10 @@ do
     random_price=$((RANDOM % 100001))
     random_address=${addresses[$i]}
     random_rooms_count=$((RANDOM % 322 + 1))
+    random_area=$((RANDOM % 100000 + 1))
 
-    # Send HTTP request
-    curl -X 'POST' \
+    # Send HTTP request and capture the output
+    response=$(curl -X 'POST' \
         'http://localhost:8000/shanyraks/' \
         -H 'accept: application/json' \
         -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NDkwOWMyODJjNTU3YjgzNjBlYmY4NDciLCJleHAiOjE2ODg0NTg3NzF9.eUT96ShgaunydVEhsMAdNfJ6oYtwS6DZSXia7dKeDNU' \
@@ -101,13 +102,18 @@ do
         "type": "'"$random_type"'",
         "price": '"$random_price"',
         "address": "'"$random_address"'",
-        "rooms_count": '"$random_rooms_count"'
-    }'
+        "rooms_count": '"$random_rooms_count"',
+        "area": '"$random_area"',
+        "description": "something"
+    }')
 
-    echo "Request $((i+1)) sent with random values:"
-    echo "Type: $random_type"
-    echo "Price: $random_price"
-    echo "Address: $random_address"
-    echo "Rooms Count: $random_rooms_count"
+#    echo "Request $((i+1)) sent with random values:"
+#    echo "Type: $random_type"
+#    echo "Price: $random_price"
+#    echo "Address: $random_address"
+#    echo "Rooms Count: $random_rooms_count"
+#    echo "Area: $random_area"
+    echo "Response:"
+    echo "$response"
     echo ""
 done
