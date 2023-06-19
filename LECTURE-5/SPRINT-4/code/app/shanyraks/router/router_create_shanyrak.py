@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List, Optional
 
 from fastapi import Depends
 from pydantic import Field
@@ -12,8 +12,8 @@ from . import router
 
 
 class Location(AppModel):
-    latitude: float
-    longitude: float
+    type: str = 'Point'
+    coordinates: List[float]
 
 
 class CreateShanyrakRequest(AppModel):
@@ -41,3 +41,46 @@ def create_shanyrak(
     print(save_data)
     inserted_id = svc.repository.create_shanyrak(user_id=user_id, payload=save_data)
     return CreateShanyrakResponse(id=inserted_id)
+
+
+
+class Shanyrak(AppModel):
+    address: str
+    price: int
+    type: str
+    rooms_count: int
+    location: Location
+
+class GetShanyrakResponse(AppModel):
+    total: int
+    objects: List[Shanyrak]
+
+@router.post("/asdasd")
+def asdasd():
+    return "asdasd"
+
+@router.get("/asda", response_model=GetShanyrakResponse)
+def get_posts(
+    limit: int = 10,
+    offset: int = 0,
+    type: Optional[str] = None,
+    rooms_count: Optional[int] = None,
+    price_from: Optional[int] = None,
+    price_to: Optional[int] = None,
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+    radius: Optional[int] = None,
+    svc: Service = Depends(get_service),
+):
+    result = svc.repository.get_posts(
+        limit,
+        offset,
+        type,
+        rooms_count,
+        price_from,
+        price_to,
+        latitude,
+        longitude,
+        radius
+    )
+    return result

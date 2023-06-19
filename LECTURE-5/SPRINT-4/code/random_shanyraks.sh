@@ -83,12 +83,12 @@ addresses=(
 )
 
 # Loop for 75 requests
-for ((i=0; i<75; i++))
+for ((i=0; i<20; i++))
 do
     # Generate random values
     random_type=("Apartment" "Cave" "Lecture Room at Satpayev University")
     random_price=$((RANDOM % 100001))
-    random_address=${addresses[$i]}
+    random_address="Almaty, ${addresses[$i]}"
     random_rooms_count=$((RANDOM % 322 + 1))
     random_area=$((RANDOM % 100000 + 1))
 

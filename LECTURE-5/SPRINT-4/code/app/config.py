@@ -36,3 +36,4 @@ client = MongoClient(mongo_url)
 
 # MongoDB database
 database = client[env.MONGODATABASE]
+database["shanyraks"].create_index([("location", "2dsphere")])

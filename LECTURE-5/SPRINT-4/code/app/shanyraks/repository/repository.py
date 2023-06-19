@@ -36,3 +36,47 @@ class ShanyrakRepository:
         return self.database["shanyraks"].delete_one(
             {"_id": ObjectId(shanyrak_id), "user_id": ObjectId(user_id)}
         )
+
+    def get_posts(
+            self,
+            limit: int,
+            offset: int,
+            type: Optional[str] = None,
+            rooms_count: Optional[int] = None,
+            price_from: Optional[int] = None,
+            price_to: Optional[int] = None,
+            latitude: Optional[float] = None,
+            longitude: Optional[float] = None,
+            radius: Optional[int] = None,
+    ):
+        filter_criteria = {}
+
+        if price_from is not None and price_to is not None:
+            filter_criteria["price"] = {
+                "$gte": price_from,
+                "$lte": price_to
+            }
+        if type is not None:
+            filter_criteria["type"] = type
+        if rooms_count is not None:
+            filter_criteria["rooms_count"] = rooms_count
+        if latitude is not None and longitude is not None and radius is not None:
+            radians = radius / 6371.0
+            filter_criteria["location"] = {
+                "$geoWithin": {
+                    "$centerSphere": [[longitude, latitude], radians]
+                }
+            }
+
+        total = self.database["shanyraks"].count_documents(filter_criteria)
+        cursor = self.database["shanyraks"] \
+            .find(filter_criteria).limit(limit).skip(offset).sort("created_at")
+
+        result = []
+        for document in cursor:
+            result.append(document)
+
+        return {
+            "total": total,
+            "objects": result
+        }
